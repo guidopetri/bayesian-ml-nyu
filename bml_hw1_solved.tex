@@ -1,0 +1,833 @@
+\documentclass[11pt]{article}
+
+\usepackage{amsmath, amssymb, amsthm} % ams packages %amsfonts is loaded by amssymb
+% \usepackage[all,warning]{onlyamsmath}
+\usepackage{graphics, graphicx} % graphics packages
+
+
+\usepackage[margin=1in]{geometry} % more reasonable margins
+\usepackage{booktabs} % prettier tables
+\usepackage{units} % prettier fractions (?)
+
+% Small sections of multiple columns
+\usepackage{multicol}
+
+\usepackage{bm}
+
+\usepackage{natbib}
+
+\usepackage{tikz} % make graphics in latex
+\usetikzlibrary{shapes,decorations}
+\usetikzlibrary{arrows}
+\usepackage{pgfplots} % to make plots in latex
+\pgfplotsset{compat=newest} % compatibility issue
+\usepackage{enumitem, comment}
+
+% formatting
+\usepackage{fancyhdr} % for changing headers and footers
+\usepackage{url} % url 
+\usepackage[normalem]{ulem}
+\usepackage{color} % colored text + names %deprecated?
+
+
+
+% hyperlink in the document
+\usepackage{hyperref} % must be the last package loaded
+
+\usepackage{comment}
+
+\usepackage{parskip}
+
+% notations
+\newcommand{\one}{\ensuremath{\mathbf{1}}}
+\newcommand{\zero}{\ensuremath{\mathbf{0}}}
+\newcommand{\prob}{\ensuremath{\mathbf{P}}}
+\newcommand{\expec}{\ensuremath{\mathbf{E}}}
+\newcommand{\ind}{\ensuremath{\mathbf{I}}}
+\newcommand{\reals}{\ensuremath{\mathbb{R}}}
+\newcommand{\naturals}{\ensuremath{\mathbb{N}}}
+\newcommand{\defeq}{\ensuremath{\triangleq}}
+\newcommand{\sP}{\ensuremath{\mathsf{P}}}
+\newcommand{\sQ}{\ensuremath{\mathsf{Q}}}
+\newcommand{\sE}{\ensuremath{\mathsf{E}}}
+
+\newcommand{\mbf}[1]{{\boldsymbol{\mathbf{#1}}}}
+\renewcommand{\bm}{\mbf}
+
+
+% environments
+\newtheorem{theorem}{Theorem}
+
+\newtheorem{proposition}{Proposition}
+\newtheorem{corollary}{Corollary}
+\newtheorem{lemma}{Lemma}
+\newtheorem{remark}{Remark}
+\newtheorem{definition}{Definition}
+\newtheorem{assumption}{Assumption}
+
+
+\title{\vspace{-20mm} Bayesian Machine Learning \\ \vspace{5mm}  \normalsize Instructor: Andrew Gordon Wilson}
+\date{}
+\author{
+\textbf{Homework 1} \\ \textbf{Due: Monday September 14 (EOD) via NYU Classes} }
+\newenvironment{solution}{\bigskip\noindent
+                          \textbf{Solution}}
+
+\begin{document}
+\maketitle
+
+Show all steps, and any code used to answer the questions.
+
+\begin{enumerate}
+\item Suppose we have data $\mathcal{D} = \{(x_i, y_i)\}_{i=1}^{n}$, and $n$ is the total number
+of training points.  Assume we want to learn the regression model
+
+\begin{align}
+y = a x  + \epsilon \,,  \label{eqn: first}
+\end{align}
+
+where $\epsilon$ is independent zero mean Gaussian noise with variance $\sigma^2$: 
+
+$\epsilon \sim \mathcal{N}(0,\sigma^2)$.
+
+\begin{enumerate}[label=(\alph*)]
+    
+    \item (2 marks): Let $\bm{y} = (y_1,\dots,y_n)^{\top}$ and $X = \{x_i\}_{i=1}^{n}$.  Derive the 
+    log likelihood for the whole training set, $\log p(\bm{y} | X, a, \sigma^2)$.
+
+    \begin{solution}
+        $$
+        p(y | X, a, \sigma^2) = \mathcal{N}(y | a X, \sigma^2)
+        $$
+
+        $$
+        p(\bm{y} | X, a, \sigma^2) = \prod_{i=1}^{n} \mathcal{N}(\bm{y} | a X, \sigma^2)
+        $$
+
+        $$
+        p(\bm{y} | X, a, \sigma^2) = \prod_{i=1}^{n} \mathcal{N}(y_i | a x_i, \sigma^2)
+        $$
+
+        $$
+        \log p(\bm{y} | X, a, \sigma^2) = - \dfrac{n}{2} \log (\sigma^2)
+                                          - \dfrac{n}{2} \log (2 \pi)
+                                          - \dfrac{1}{2 \sigma^2} \sum_{i=1}^{n} (y_i - ax_i)^2
+        $$
+
+        $$\square$$
+    \end{solution}
+    
+    \item (2 marks): Given data $\mathcal{D} = \{(4,21), (9,59), (7,25), (15,127)\}$, find the maximum
+    likelihood solutions for $a$ and $\sigma^2$.
+
+    \begin{solution}
+        To find the maximum likelihood, we take the gradient of the following:
+
+        $$
+        \log p(\bm{y} | X, a, \sigma^2) = - \dfrac{n}{2} \log (\sigma^2)
+                                          - \dfrac{n}{2} \log (2 \pi)
+                                          - \dfrac{1}{2 \sigma^2} \sum_{i=1}^{n} (y_i - ax_i)^2
+        $$
+
+        and set it to $0$ with respect to $a$ and $\sigma^2$:
+
+        $$
+        \dfrac{\delta{\log p(\bm{y} | X, a, \sigma^2)}}{\delta a} = 
+            (-\dfrac{1}{\sigma^2} \sum_{i=1}^{n} (y_i - a x_i)) \cdot (- x_i) =
+            \sum_{i=1}^{n} \dfrac{x_i (y_i - a x_i)}{\sigma^2} = 0
+        $$
+
+        $$
+        \dfrac{\delta{\log p(\bm{y} | X, a, \sigma^2)}}{\delta \sigma^2} = 
+            - \dfrac{n}{\sigma} + \dfrac{1}{\sigma^3} \sum_{i=1}^n (y_i - ax_i)^2 = 0
+        $$
+
+        Simplifying the former:
+
+        $$
+        \sum_{i=1}^{n} \dfrac{x_i (y_i - a x_i)}{\sigma^2} = 0
+        $$
+
+        $$
+        \dfrac{4 (21 - a 4) + 9 (59 - a 9) + 7 (25 - a 7) + 15 (127 - a 15)}{\sigma^2} = 0
+        $$
+
+        $$
+        \dfrac{2695 - 371a}{\sigma^2} = 0
+        $$
+
+        $$
+        a = 7.2642
+        $$
+
+        Simplifying the latter equation, now with the knowledge of $a$:
+
+        $$
+        - n + \dfrac{1}{\sigma^2} \sum_{i=1}^n (y_i - ax_i)^2 = 0
+        $$
+
+        $$
+        (21 - 4a)^2 + (59 - 9a)^2 + (25 - 7a)^2 + (127 - 15a)^2 = n \sigma^2
+        $$
+
+        $$
+        371 a^2 - 5390 a + 20676 = n \sigma^2
+        $$
+
+        Plugging in $a$ and then $n$:
+
+        $$
+        371 \cdot (7.2642)^2 - 5390 \cdot (7.2642) + 20676 = n \sigma^2
+        $$
+
+        $$
+        1099.1132 = 4 \sigma^2
+        $$
+
+        $$
+        \sigma^2 = 274.7783
+        $$
+
+        $$
+        \sigma = 16.5764
+        $$
+
+        $$\square$$
+    \end{solution}
+    
+    \item (2 marks): Suppose we instead consider the regression model 
+
+    \begin{align}
+    x = b y + \epsilon \,.
+    \end{align}
+
+    Is the maximum likelihood solution for $b = \frac{1}{a}$?  Explain why or why not -- with derivations if necessary.
+    
+    \begin{solution}
+        Using the log-likelihood for this model:
+
+        $$
+        \log p(\bm{x} | Y, b, \sigma^2) = - \dfrac{n}{2} \log (\sigma^2)
+                                          - \dfrac{n}{2} \log (2 \pi)
+                                          - \dfrac{1}{2 \sigma^2} \sum_{i=1}^{n} (x_i - by_i)^2
+        $$
+
+        (defined similarly to exercise A)
+
+        We can find the maximum likelihood for $b$ by taking the gradient with respect to $b$ and then setting it to $0$:
+
+        $$
+        \dfrac{\delta{\log p(\bm{x} | Y, b, \sigma^2)}}{\delta b} = 
+            (-\dfrac{1}{\sigma^2} \sum_{i=1}^{n} (x_i - b y_i)) \cdot (- y_i) =
+            \sum_{i=1}^{n} \dfrac{y_i (x_i - b y_i)}{\sigma^2} = 0
+        $$
+
+        $$
+        \sum_{i=1}^{n} \dfrac{y_i (x_i - b y_i)}{\sigma^2} = 0
+        $$
+
+        $$
+        \sum_{i=1}^{n} y_i x_i = \sum_{i=1}^{n} b y_i^2
+        $$
+
+        Returning to the original regression with $a$, and following a similar line, we get:
+
+        $$
+        \sum_{i=1}^{n} \dfrac{x_i (y_i - a x_i)}{\sigma^2} = 0
+        $$
+
+        $$
+        \sum_{i=1}^{n} x_i y_i = \sum_{i=1}^{n} a x_i^2
+        $$
+
+        Thus
+
+        $$
+        \sum_{i=1}^{n} a x_i^2 = \sum_{i=1}^{n} b y_i^2
+        $$
+
+        $$
+        \dfrac{a}{b} = \dfrac{\sum_{i=1}^{n} y_i^2}{\sum_{i=1}^{n} x_i^2}
+        $$
+
+        Since it is clear that the sum of squares for $\bm{y}$ is different from the sum of squares for $\bm{x}$, the ratio between $a$ and $b$ is not $1$. Thus, the solution for $b$ is not $\frac{1}{a}$, but rather
+
+        $$
+        b = a \dfrac{\sum_{i=1}^{n} x_i^2}{\sum_{i=1}^{n} y_i^2}
+        $$
+
+        $$\square$$
+    \end{solution}
+
+    \item (2 marks): Suppose we place a prior distribution on $a$ such that $p(a | \gamma^2) = \mathcal{N}(0,\gamma^2)$.  Use
+    the sum and product rules of probability to write down the \emph{marginal likelihood} of the data, 
+    $p(\bm{y} | X, \sigma^2, \gamma^2)$, conditioned only on $X, \sigma^2, \gamma^2$.  
+    
+    \begin{solution}
+        The marginal likelihood from exercise A is defined as
+
+        $$
+        p(\bm{y} | X, a, \sigma^2) = \mathcal{N}(\bm{y} | a X, \sigma^2)
+        $$
+
+        marginalizing with the prior:
+
+        $$
+        p(\bm{y} | X, \sigma^2, \gamma^2) = \int p(\bm{y} | X, a, \sigma^2) p(a|\gamma^2) da
+        $$
+
+        $$
+        p(\bm{y} | X, \sigma^2, \gamma^2) = \int \mathcal{N}(\bm{y} | a X, \sigma^2) \mathcal{N}(0, \gamma^2) da
+        $$
+
+        Expanding the normal distributions:
+
+        $$
+        p(\bm{y} | X, \sigma^2, \gamma^2) = \int \dfrac{1}{\sigma\sqrt{2\pi}} \exp (- \dfrac{1}{2 \sigma^2} (\sum_{i=1}^n (y_i - a x_i)^2)) \dfrac{1}{\gamma\sqrt{2\pi}} \exp (- \dfrac{1}{2 \gamma^2} (a - 0)^2) da
+        $$
+
+        $$
+        p(\bm{y} | X, \sigma^2, \gamma^2) = \int \dfrac{1}{\sigma\sqrt{2\pi}} \exp (- \dfrac{1}{2 \sigma^2} \sum_{i=1}^n(y_i - a x_i)^2) \dfrac{1}{\gamma\sqrt{2\pi}} \exp (- \dfrac{1}{2 \gamma^2} a^2) da
+        $$
+
+        $$
+        p(\bm{y} | X, \sigma^2, \gamma^2) = \dfrac{1}{\sigma\gamma 2\pi} \int \exp (- \dfrac{a^2}{2 \gamma^2}) \exp (- \dfrac{1}{2 \sigma^2} \sum_{i=1}^n(y_i - a x_i)^2) da
+        $$
+
+        $$
+        p(\bm{y} | X, \sigma^2, \gamma^2) = \dfrac{1}{\sigma\gamma 2\pi} \int \exp (- \dfrac{a^2}{2 \gamma^2}) \exp (- \dfrac{1}{2 \sigma^2} \sum_{i=1}^n (y_i^2 - 2 a x_i y_i + a^2 x_i^2)) da
+        $$
+
+        $$
+        p(\bm{y} | X, \sigma^2, \gamma^2) = \dfrac{1}{\sigma\gamma 2\pi} \int \exp (- \dfrac{a^2}{2 \gamma^2} - \dfrac{1}{2 \sigma^2} \sum_{i=1}^n (y_i^2 - 2 a x_i y_i + a^2 x_i^2)) da
+        $$
+
+        $$
+        p(\bm{y} | X, \sigma^2, \gamma^2) = \dfrac{1}{\sigma\gamma 2\pi} \int \exp (- \dfrac{\sigma^2 a^2}{2 \sigma^2 \gamma^2} - \dfrac{\gamma^2}{2 \sigma^2 \gamma^2} \sum_{i=1}^n (y_i^2 - 2 a x_i y_i + a^2 x_i^2)) da
+        $$
+
+        $$
+        p(\bm{y} | X, \sigma^2, \gamma^2) = \dfrac{1}{\sigma\gamma 2\pi} \int \exp (- \dfrac{1}{2 \sigma^2 \gamma^2} (\sigma^2 a^2 + \gamma^2 \sum_{i=1}^n (y_i^2 - 2 a x_i y_i + a^2 x_i^2))) da
+        $$
+
+        $$
+        p(\bm{y} | X, \sigma^2, \gamma^2) = \dfrac{1}{\sigma\gamma 2\pi} \int \exp (- \dfrac{1}{2 \sigma^2 \gamma^2} (\dfrac{\gamma^2\sigma^2 a^2}{\gamma^2} + \gamma^2 \sum_{i=1}^n (y_i^2 - 2 a x_i y_i + a^2 x_i^2))) da
+        $$
+
+        $$
+        p(\bm{y} | X, \sigma^2, \gamma^2) = \dfrac{1}{\sigma\gamma 2\pi} \int \exp (- \dfrac{1}{2 \sigma^2 \gamma^2} (\gamma^2 (\dfrac{\sigma^2 a^2}{\gamma^2} + \sum_{i=1}^n (y_i^2 - 2 a x_i y_i + a^2 x_i^2)))) da
+        $$
+
+        $$
+        p(\bm{y} | X, \sigma^2, \gamma^2) = \dfrac{1}{\sigma\gamma 2\pi} \int \exp (- \dfrac{1}{2 \sigma^2} (\dfrac{\sigma^2 a^2}{\gamma^2} + (y - a x)^T (y - a x))) da
+        $$
+
+        $$
+        p(\bm{y} | X, \sigma^2, \gamma^2) = \dfrac{1}{\sigma\gamma 2\pi} \int \exp (- \dfrac{1}{2 \sigma^2} (\dfrac{\sigma^2 a^2}{\gamma^2} + y^T y - 2 a x^T y + a^2 x^T x)) da
+        $$
+
+        $$
+        p(\bm{y} | X, \sigma^2, \gamma^2) = \dfrac{1}{\sigma\gamma 2\pi} \int \exp (- \dfrac{1}{2 \sigma^2} (a^2(\dfrac{\sigma^2}{\gamma^2} + x^T x) - 2 a x^T y + y^T y)) da
+        $$
+
+        $$
+        p(\bm{y} | X, \sigma^2, \gamma^2) = \dfrac{1}{\sigma\gamma 2\pi} \int \exp (- \dfrac{1}{2 \sigma^2} (a^2(\dfrac{\sigma^2}{\gamma^2} + x^T x) - 2 a x^T y) - \dfrac{1}{2 \sigma^2} y^T y) da
+        $$
+
+        $$
+        p(\bm{y} | X, \sigma^2, \gamma^2) = \dfrac{1}{\sigma\gamma 2\pi} \int \dfrac{\exp (- \dfrac{1}{2 \sigma^2} (a^2(\dfrac{\sigma^2}{\gamma^2} + x^T x) - 2 a x^T y)}{\exp(\dfrac{1}{2 \sigma^2} y^T y)} da
+        $$
+
+        $$
+        p(\bm{y} | X, \sigma^2, \gamma^2) = \dfrac{1}{\sigma\gamma 2\pi } \exp(- \dfrac{1}{2 \sigma^2} y^T y) \int \exp (- \dfrac{1}{2 \sigma^2} (a^2(\dfrac{\sigma^2}{\gamma^2} + x^T x) - 2 a x^T y)) da
+        $$
+
+        $$
+        p(\bm{y} | X, \sigma^2, \gamma^2) = \dfrac{1}{\sigma\gamma 2\pi } \exp(- \dfrac{1}{2 \sigma^2} y^T y) \int \exp (- \dfrac{1}{2 \sigma^2} (a^2(\dfrac{\sigma^2}{\gamma^2} + x^T x) - 2 a x^T y + \dfrac{(x^T y)^2}{\dfrac{\sigma^2}{\gamma^2} + x^T x} - \dfrac{(x^T y)^2}{\dfrac{\sigma^2}{\gamma^2} + x^T x})) da
+        $$
+
+        $$
+        p(\bm{y} | X, \sigma^2, \gamma^2) = \dfrac{1}{\sigma\gamma 2\pi } \exp(- \dfrac{1}{2 \sigma^2} y^T y) \int \exp (- \dfrac{1}{2 \sigma^2} (\sqrt{\dfrac{\sigma^2}{\gamma^2} + x^T x} a - \dfrac{x^T y}{\sqrt{\dfrac{\sigma^2}{\gamma^2} + x^T x}})^2 - \dfrac{(x^T y)^2}{\dfrac{\sigma^2}{\gamma^2} + x^T x}) da
+        $$
+
+        $$
+        p(\bm{y} | X, \sigma^2, \gamma^2) = \dfrac{1}{\sigma\gamma 2\pi } \exp(- \dfrac{1}{2 \sigma^2} (y^T y - \dfrac{(x^T y)^2}{\dfrac{\sigma^2}{\gamma^2} + x^T x}))\int \exp (- \dfrac{1}{2 \sigma^2} (\sqrt{\dfrac{\sigma^2}{\gamma^2} + x^T x} a - \dfrac{x^T y}{\sqrt{\dfrac{\sigma^2}{\gamma^2} + x^T x}})^2) da
+        $$
+
+        $$
+        p(\bm{y} | X, \sigma^2, \gamma^2) = \dfrac{1}{\sigma\gamma 2\pi } \exp(- \dfrac{1}{2 \sigma^2} (y^T y - \dfrac{(x^T y)^2}{\dfrac{\sigma^2}{\gamma^2} + x^T x}))\int \exp (- \dfrac{(\dfrac{\sigma^2}{\gamma^2} + x^T x)}{2 \sigma^2} (a - \dfrac{x^T y}{\dfrac{\sigma^2}{\gamma^2} + x^T x})^2) da
+        $$
+
+        Resolving the integral using Gaussian integral property:
+
+        $$
+        p(\bm{y} | X, \sigma^2, \gamma^2) = \dfrac{1}{\sigma\gamma 2\pi } \exp(- \dfrac{1}{2 \sigma^2} (y^T y - \dfrac{(x^T y)^2}{\dfrac{\sigma^2}{\gamma^2} + x^T x})) \sqrt{\dfrac{2 \sigma^2\pi}{(\dfrac{\sigma^2}{\gamma^2} + x^T x)}}
+        $$
+
+        $$
+        p(\bm{y} | X, \sigma^2, \gamma^2) = \dfrac{1}{\gamma \sqrt{2\pi(\dfrac{\sigma^2}{\gamma^2} + x^T x)}} \exp(- \dfrac{1}{2 \sigma^2} (y^T y - \dfrac{(x^T y)^2}{\dfrac{\sigma^2}{\gamma^2} + x^T x}))
+        $$
+
+        $$
+        p(\bm{y} | X, \sigma^2, \gamma^2) = \dfrac{1}{\sqrt{2\pi\sigma^2 + 2\pi\gamma^2x^T x}} \exp(- \dfrac{1}{2 \sigma^2} (y^T y - \dfrac{(x^T y)^2}{\dfrac{\sigma^2}{\gamma^2} + x^T x}))
+        $$
+
+        $$
+        p(\bm{y} | X, \sigma^2, \gamma^2) = \dfrac{1}{\sqrt{2\pi\sigma^2 + 2\pi\gamma^2x^T x}} \exp(- \dfrac{1}{2 \sigma^2} (y^T y - \dfrac{\gamma^2 y^T x x^T y}{\sigma^2 + \gamma^2 x^T x}))
+        $$
+
+        $$
+        p(\bm{y} | X, \sigma^2, \gamma^2) = \dfrac{1}{\sqrt{2\pi\sigma^2 + 2\pi\gamma^2x^T x}} \exp(- \dfrac{1}{2} (y^T \sigma^{-2} y - \dfrac{\sigma^{-2} \gamma^2 y^T x x^T y}{\sigma^2 + \gamma^2 x^T x}))
+        $$
+
+        $$
+        p(\bm{y} | X, \sigma^2, \gamma^2) = \dfrac{1}{\sqrt{2\pi\sigma^2 + 2\pi\gamma^2x^T x}} \exp(- \dfrac{1}{2} y^T(\sigma^{-2} - \dfrac{\sigma^{-2} \gamma^2 x x^T}{\sigma^2 + \gamma^2 x^T x})y)
+        $$
+
+        $$
+        p(\bm{y} | X, \sigma^2, \gamma^2) = \dfrac{1}{\sqrt{2\pi\sigma^2 + 2\pi\gamma^2x^T x}} \exp(- \dfrac{1}{2} y^T(\sigma^{-2} - x \sigma^{-2} \gamma^2 (\sigma^2 + \gamma^2 x^T x)^{-1} x^T)y)
+        $$
+
+        Using Woodbury, we replace as follows:
+
+
+        $$
+        p(\bm{y} | X, \sigma^2, \gamma^2) = \dfrac{1}{\sqrt{2\pi\sigma^2 + 2\pi\gamma^2x^T x}} \exp(- \dfrac{1}{2} y^T M^{-1} y)
+        $$
+
+        with 
+
+        $$
+        M^{-1} = \sigma^2 - \sigma^2 x ((- \sigma^{-2} \gamma^2 (\sigma^2 + \gamma^2 x^T x)^{-1})^{-1} + x^T \sigma^2 x)^{-1} x^T \sigma^2
+        $$
+
+        $$
+        M^{-1} = \sigma^2 - \dfrac{\sigma^2 x x^T \sigma^2}{(- \sigma^2 \gamma^{-2} (\sigma^2 + \gamma^2 x^T x) + x^T \sigma^2 x)}
+        $$
+
+        $$
+        M^{-1} = \sigma^2 + \gamma^2 x x^T
+        $$
+
+        Plugging $M$ back in:
+
+        $$
+        p(\bm{y} | X, \sigma^2, \gamma^2) = \dfrac{1}{\sqrt{2\pi\sigma^2 + 2\pi\gamma^2x^T x}} \exp(- \dfrac{1}{2} y^T (\sigma^2 + \gamma^2 x x^T)^{-1} y)
+        $$
+
+        $$
+        p(\bm{y} | X, \sigma^2, \gamma^2) = \dfrac{1}{\sqrt{2\pi\sigma^2 + 2\pi\gamma^2x^T x}} \exp(- \dfrac{1}{2} \dfrac{y^T  y}{(\sigma^2 + \gamma^2 x x^T)})
+        $$
+
+        and this is a normal distribution:
+
+        $$
+        p(\bm{y} | X, \sigma^2, \gamma^2) = \mathcal{N}(\bm{y}|0, (\sigma^2 + \gamma^2 x x^T))
+        $$
+
+        since $x x^T = x^T x$ due to $x$ being a $1x1$ matrix. This is also equivalent to the expression in exercise (e) by the same process.
+
+        $$\square$$
+
+        % $$
+        % p(\bm{y} | X, \sigma^2, \gamma^2) = \dfrac{1}{\sqrt{2\pi\sigma^2 + 2\pi\gamma^2x^T x}} \exp(- \dfrac{1}{2 \sigma^2} (\dfrac{(\dfrac{\sigma^2}{\gamma^2} + x^T x) y^T y - (x^T y)^2}{\dfrac{\sigma^2}{\gamma^2} + x^T x}))
+        % $$
+
+        % $$
+        % p(\bm{y} | X, \sigma^2, \gamma^2) = \dfrac{1}{\sqrt{2\pi\sigma^2 + 2\pi\gamma^2x^T x}} \exp(- \dfrac{1}{2 \sigma^2} (\dfrac{(\dfrac{\sigma^2}{\gamma^2}) y^T y}{\dfrac{\sigma^2}{\gamma^2} + x^T x}))
+        % $$
+
+        % $$
+        % p(\bm{y} | X, \sigma^2, \gamma^2) = \dfrac{1}{\sqrt{2\pi\sigma^2 + 2\pi\gamma^2x^T x}} \exp(- \dfrac{1}{2 \gamma^2} (\dfrac{y^T y}{\dfrac{\sigma^2}{\gamma^2} + x^T x}))
+        % $$
+
+        % $$
+        % p(\bm{y} | X, \sigma^2, \gamma^2) = \dfrac{1}{\sqrt{2\pi\sigma^2 + 2\pi\gamma^2x^T x}} \exp(- \dfrac{1}{2 \gamma^2 (\dfrac{\sigma^2}{\gamma^2} + x^T x)} y^T y)
+        % $$
+
+        % $$
+        % p(\bm{y} | X, \sigma^2, \gamma^2) = \dfrac{1}{\sqrt{2\pi\sigma^2 + 2\pi\gamma^2x^T x}} \exp(- \dfrac{1}{2 \sigma^2 + 2 \gamma^2 x^T x} y^T y)
+        % $$
+
+        % $$\square$$
+    \end{solution}
+
+    \item (2 marks): Without explicitly using the sum and product rules, derive $p(\bm{y} | X, \sigma^2, \gamma^2)$, by considering 
+    the properties of Gaussian distributions and finding expectations and covariances.  This expression should look different
+    than your answer to the previous question.  Comment on the differences in computational complexity.  \textbf{Bonus (1 mark)}:
+    show that both representations in (d) and (e) are mathematically equivalent.
+    
+    \begin{solution}
+        The marginal likelihood from exercise A is defined as
+
+        $$
+        p(\bm{y} | X, a, \sigma^2) = \mathcal{N}(\bm{y} | a X, \sigma^2)
+        $$
+
+        marginalizing with the prior:
+
+        $$
+        p(\bm{y} | X, \sigma^2, \gamma^2) = \int p(\bm{y} | X, a, \sigma^2) p(a|\gamma^2) da
+        $$
+
+        $$
+        p(\bm{y} | X, \sigma^2, \gamma^2) = \int \mathcal{N}(\bm{y} | a X, \sigma^2) \mathcal{N}(0, \gamma^2) da
+        $$
+
+        Using the identity (2.115) in the Bishop book, we have
+
+        $$
+        p(\bm{y} | X, \sigma^2, \gamma^2) = \mathcal{N}(\bm{y} | X \cdot 0 + 0, \sigma^2 + x^T \gamma^2 x)
+        $$
+
+        $$
+        p(\bm{y} | X, \sigma^2, \gamma^2) = \mathcal{N}(\bm{y} | 0, \sigma^2 + x^T \gamma^2 x)
+        $$
+
+        $$
+        p(\bm{y} | X, \sigma^2, \gamma^2) = \dfrac{1}{\sqrt{2 (\sigma^2 + x^T \gamma^2 x) \pi}} \exp (- \dfrac{\sum_{i=1}^n y_i^2}{2(\sigma^2 + x^T \gamma^2 x)})
+        $$
+
+        $$\square$$
+
+        Bonus mark done in exercise (d).
+
+        The differences in computational complexity stem mostly from the solution in (e) having only a normal distribution, whereas (d) has an integral and the multiplication of two normal distributions. Thus, the solution in (e) is far more efficient.
+    \end{solution}
+
+    \item (2 marks): What are the maximum marginal likelihood solutions $\hat{\sigma}^2 =  \text{argmax}_{\sigma^2} p(\bm{y} | X, \sigma^2, \gamma^2)$ and 
+    $\hat{\gamma}^2 =  \text{argmax}_{\gamma^2} p(\bm{y} | X, \sigma^2, \gamma^2)$?
+
+    \begin{solution}
+        Starting from:
+
+        $$
+        p(\bm{y} | X, \sigma^2, \gamma^2) = \mathcal{N}(\bm{y} | 0, \sigma^2 + x^T \gamma^2 x)
+        $$
+
+        We can find the maximum marginal likelihood solutions for $\hat{\sigma}^2$ and $\hat{\gamma^2}$ by first taking the logarithm of the above, then taking the derivative with respect to $\sigma^2$ (or $\gamma^2$, respectively) and setting that to $0$, then finding the solution for the appropriate variable.
+
+        Taking the logarithm:
+
+        $$
+        \log p(\bm{y} | X, \sigma^2, \gamma^2) = \log (\dfrac{1}{\sqrt{2(\sigma^2 + x^T \gamma^2 x) \pi}} \exp (- \dfrac{y^T y}{2(\sigma^2 + x^T \gamma^2 x)}))
+        $$
+
+        $$
+        \log p(\bm{y} | X, \sigma^2, \gamma^2) = -\dfrac{1}{2} \log (2(\sigma^2 + x^T \gamma^2 x) \pi) - \dfrac{y^T y}{2(\sigma^2 + x^T \gamma^2 x)}
+        $$
+
+        $$
+        \log p(\bm{y} | X, \sigma^2, \gamma^2) = -\dfrac{1}{2} \log (2\pi) -\dfrac{1}{2} \log (\sigma^2 + x^T \gamma^2 x) - \dfrac{1}{2(\sigma^2 + x^T \gamma^2 x)} y^T y
+        $$
+
+        For $\sigma^2$:
+
+        $$
+        \dfrac{\delta \log p(\bm{y} | X, \sigma^2, \gamma^2)}{\delta \sigma^2} = -\dfrac{1}{2(\sigma^2 + x^T \gamma^2 x)} + \dfrac{1}{2(\sigma^2 + x^T \gamma^2 x)^{2}}  y^T y = 0
+        $$
+
+        $$
+        \dfrac{1}{(\sigma^2 + x^T \gamma^2 x)^{2}}  y^T y = \dfrac{1}{(\sigma^2 + x^T \gamma^2 x)}
+        $$
+
+        Since the denominator cannot be zero ($\sigma^2 > 0, x^T \gamma^2 x > 0$):
+
+        $$
+        \dfrac{1}{(\sigma^2 + x^T \gamma^2 x)}  y^T y = 1
+        $$
+
+        $$
+        y^T y = \sigma^2 + x^T \gamma^2 x
+        $$
+
+        $$
+        \hat{\sigma}^2 = y^T y  - x^T \gamma^2 x
+        $$
+
+        $$\square$$
+
+        For $\gamma^2$:
+
+        $$
+        \dfrac{\delta \log p(\bm{y} | X, \sigma^2, \gamma^2)}{\delta \gamma^2} = -\dfrac{x^T x}{2(\sigma^2 + x^T x \gamma^2)} + \dfrac{x^T x}{2(\sigma^2 + x^T x \gamma^2)^2} y^T y = 0
+        $$
+
+        $$
+        \dfrac{x^T x}{2(\sigma^2 + x^T x \gamma^2)^2} y^T y = \dfrac{x^T x}{2(\sigma^2 + x^T x \gamma^2)} 
+        $$
+
+        By a similar reasoning as above:
+
+        $$
+        \dfrac{1}{(\sigma^2 + x^T x \gamma^2)} y^T y = 1
+        $$
+
+        $$
+        y^T y = \sigma^2 + x^T x \gamma^2
+        $$
+
+        $$
+        \hat{\gamma}^2 = \dfrac{y^T y - \sigma^2}{x^T x}
+        $$
+
+        $$\square$$
+    \end{solution}
+    
+    \item (2 marks): Derive the predictive distribution for $p( y_* | {x}_*, \hat{\sigma}^2, \hat{\gamma}^2, \mathcal{D})$ for any arbitrary test point $x_*$,
+    where $y_* = y(x_*)$.
+
+    \begin{solution}
+
+        The predictive distribution can be described as:
+
+        $$
+        p( y_* | {x}_*, \hat{\sigma}^2, \hat{\gamma}^2, \mathcal{D}) = \int p(y_* | x_*, \hat{\sigma}^2, \hat{\gamma}^2, \mathcal{D}, a) p(a | \hat{\sigma}^2, \hat{\gamma}^2, \mathcal{D}) da
+        $$
+
+        We can find the posterior $p(a | \hat{\sigma^2}, \hat{\gamma^2}, \mathcal{D})$ using the Gaussian properties in 2.116, 2.117 from the Bishop book, together with $p(a|\hat{\gamma}^2)$ and $p(\mathcal{D}|a, x, \hat{\sigma}^2, \hat{\gamma}^2$:
+
+        $$
+        p(a|\hat{\gamma}^2) = \mathcal{N}(0, \hat{\gamma}^2)
+        $$
+
+        $$
+        p(\mathcal{D}|a, x, \hat{\sigma}^2, \hat{\gamma}^2) = \mathcal{N}(a x, \hat{\sigma}^2)
+        $$
+
+        $$
+        p( y_* | {x}_*, \hat{\sigma}^2, \hat{\gamma}^2, \mathcal{D}) = \int \mathcal{N}(y_*|ax_*, \hat{\sigma}^2) \mathcal{N}(a | \Sigma (x^T \hat{\sigma}^{-2} (y - 0) + \hat{\gamma}^{-2} \cdot 0), \Sigma) da
+        $$
+
+        with $\Sigma = (\hat{\gamma}^{-2} + x^T \hat{\sigma}^{-2} x)^{-1}$.
+
+        $$
+        p( y_* | {x}_*, \hat{\sigma}^2, \hat{\gamma}^2, \mathcal{D}) = \int \mathcal{N}(y_*|ax_*, \hat{\sigma}^2) \mathcal{N}(a | \Sigma (x^T \hat{\sigma}^{-2} y), \Sigma) da
+        $$
+
+        Applying 2.115 then yields
+
+        $$
+        p( y_* | {x}_*, \hat{\sigma}^2, \hat{\gamma}^2, \mathcal{D}) = \mathcal{N}(y_*|x_* \Sigma(x^T\hat{\sigma}^{-2}y), \hat{\sigma}^2 + x_* \Sigma x_*^T)
+        $$
+
+        $$\square$$
+
+        % Using the Woodbury Matrix Identity on $\Sigma$:
+
+        % $$
+        % \Sigma = (\hat{\gamma}^{-2} + x^T \hat{\sigma}^{-2} x)^{-1}
+        % $$
+
+        % $$
+        % \Sigma = \hat{\gamma}^{2} - \hat{\gamma}^{2} x^T (\hat{\sigma}^{2} + x^T \hat{\gamma}^{2}x)^{-1}x\hat{\gamma}^{2}
+        % $$
+
+        % Incorporating the result from exercise F:
+
+        % $$
+        % \Sigma = \dfrac{y^T y - \sigma^2}{x^T x} - \dfrac{y^T y - \sigma^2}{x^T x} x^T (\hat{\sigma}^{2} + x^T \dfrac{y^T y - \sigma^2}{x^T x}x)^{-1}x\dfrac{y^T y - \sigma^2}{x^T x}
+        % $$
+
+        % $$
+        % \Sigma = \dfrac{y^T y - \sigma^2}{x^T x} - \dfrac{y^T y - \sigma^2}{y^T y} \dfrac{y^T y - \sigma^2}{x^T x}
+        % $$
+
+        % $$
+        % \Sigma = \dfrac{y^T y - \sigma^2}{x^T x} (1 - \dfrac{y^T y - \sigma^2}{y^T y})
+        % $$
+
+        % $$
+        % \Sigma = \dfrac{y^T y - \sigma^2}{x^T x} + \dfrac{\sigma^2}{y^T y}
+        % $$
+
+        % $$
+        % \Sigma = \dfrac{(y^T y - \sigma^2)y^T y + \sigma^2 x^T x}{x^T x y^T y}
+        % $$
+
+        % Plugging this in:
+
+        % $$
+        % p( y_* | {x}_*, \hat{\sigma}^2, \hat{\gamma}^2, \mathcal{D}) = \mathcal{N}(y_*|x_* \dfrac{(y^T y - \hat{\sigma}^2)y^T y + \hat{\sigma}^2 x^T x}{x^T x y^T y}(x^T\hat{\sigma}^{-2}y), \hat{\sigma}^2 + x_* \dfrac{(y^T y - \hat{\sigma}^2)y^T y + \hat{\sigma}^2 x^T x}{x^T x y^T y} x_*^T)
+        % $$
+
+        % $$
+        % p( y_* | {x}_*, \hat{\sigma}^2, \hat{\gamma}^2, \mathcal{D}) = \mathcal{N}(y_*|x_* \dfrac{(y^T y - \hat{\sigma}^2)y^T y + \hat{\sigma}^2 x^T x}{x y^T\hat{\sigma}^2}, \hat{\sigma}^2 + x_* \dfrac{(y^T y - \hat{\sigma}^2)y^T y + \hat{\sigma}^2 x^T x}{x^T x y^T y} x_*^T)
+        % $$
+
+        % $$
+        % \Sigma = \hat{\sigma}^{2} - x^T (1 + x^T x)^{-1}x\hat{\sigma}^{2}
+        % $$
+
+        % $$
+        % \Sigma = \hat{\sigma}^{2} - (1 - (1 + x^T x)^{-1})\hat{\sigma}^{2}
+        % $$
+
+        % $$
+        % \Sigma = \hat{\sigma}^{2}(1 + x^T x)^{-1}
+        % $$
+
+        % Plugging this in:
+
+        % $$
+        % p( y_* | {x}_*, \hat{\sigma}^2, \hat{\gamma}^2, \mathcal{D}) = \mathcal{N}(y_*|x_* \hat{\sigma}^{2}(1 + x^T x)^{-1}(x^T\hat{\sigma}^{-2}y), \hat{\sigma}^2 + x_* \hat{\sigma}^{2}(1 + x^T x)^{-1} x_*^T)
+        % $$
+
+        % $$
+        % p( y_* | {x}_*, \hat{\sigma}^2, \hat{\gamma}^2, \mathcal{D}) = \mathcal{N}(y_*|\dfrac{x_* (x^Ty)}{1 + x^T x}, \hat{\sigma}^2 (1 + \dfrac{x_*^2}{1 + x^T x}))
+        % $$
+
+        % $$\square$$
+    \end{solution}
+    
+    \item (2 marks): For the dataset $\mathcal{D}$ in (b), give the predictive mean $\mathbb{E}[y_* | x_*, \hat{\sigma}^2, \hat{\gamma}^2, \mathcal{D}]$ and predictive variance $\text{var}(y_* |  x_*, \hat{\sigma}^2, \hat{\gamma}^2, \mathcal{D})$ for $x_* = 14$.
+
+    \begin{solution}
+        % mean ~ 101
+        % var ~ 409
+        % from pymc3
+
+        Using the $\hat{\sigma}^2$ acquired from the dataset, the result from exercise F, and the result from exercise G:
+
+        $$
+        p( y_* | {x}_*, \hat{\sigma}^2, \hat{\gamma}^2, \mathcal{D}) = \mathcal{N}(y_*|x_* \Sigma(x^T\hat{\sigma}^{-2}y), \hat{\sigma}^2 + x_* \Sigma x_*^T)
+        $$
+
+        $$
+        \Sigma = (\hat{\gamma}^{-2} + x^T \hat{\sigma}^{-2} x)^{-1}
+        $$
+
+        With $\hat{\gamma}^2$ replaced:
+
+        $$
+        \Sigma = (\dfrac{x^T x}{y^T y - \sigma^2} + x^T \hat{\sigma}^{-2} x)^{-1}
+        $$
+
+        $$
+        \sigma^2 = 274.7783
+        $$
+
+        The expected value is simply the mean of $p( y_* | {x}_*, \hat{\sigma}^2, \hat{\gamma}^2, \mathcal{D})$, and the variance is the variance of $p( y_* | {x}_*, \hat{\sigma}^2, \hat{\gamma}^2, \mathcal{D})$, both with the input $x_* = 14$:
+
+        $$
+        E(y_*) = 14 \cdot \Sigma(x^T\hat{\sigma}^{-2}y)
+        $$
+
+        $$
+        var(y_*) = \hat{\sigma}^2 + 14^2 \cdot \Sigma
+        $$
+
+        Plugging in the dataset for $\Sigma$:
+
+        $$
+        \Sigma = (\dfrac{371}{20676 - 274.7783} + \dfrac{371}{274.7783})^{-1} = 0.7308
+        $$
+
+        $$
+        E(y_*) = 14 \cdot 0.7308 \cdot \dfrac{2695}{274.7783} = 100.3467
+        $$
+
+        $$
+        var(y_*) = 274.7783 + 14^2 \cdot 0.7308 = 418.0151
+        $$
+
+        $$\square$$
+        \end{solution}
+    
+    \item (2 marks): Suppose we replace $x$ in Eq.~\eqref{eqn: first} with $g(x,w)$, where $g$ is a non-linear function parametrized by $w$,
+    and $w \sim \mathcal{N}(0,\lambda^2)$: e.g., $g(x,w) = \cos (w x)$.  Can you write down an analytic expression for $p(\bm{y} | w, X, \sigma^2, \gamma^2)$?  How about $p(\bm{y} | X, \sigma^2, \gamma^2, \lambda^2)$?  Justify your answers.
+
+    \begin{solution}
+        If we replace $x$ with a non-linear function of $x$, $g(x,w)$ with $w \sim \mathcal{N}(0, \lambda^2)$ then we have to re-derive the marginal distribution across $a$:
+
+        $$
+        p(\bm{y} | w, X, \sigma^2, \gamma^2) = \int p(\bm{y} | w, a, X, \sigma^2) p(a | \gamma^2) da
+        $$
+
+        $$
+        p(\bm{y} | w, X, \sigma^2, \gamma^2) = \int \mathcal{N}(\bm{y}| a \cdot g(X, w), \sigma^2) \mathcal{N}(a | 0, \gamma^2) da
+        $$
+
+        $$
+        p(\bm{y} | w, X, \sigma^2, \gamma^2) = \mathcal{N}(\bm{y}|g(X, w) \cdot 0, \sigma^2 + g(X, w) \gamma^2 g(X, w)^T)
+        $$
+
+        $$
+        p(\bm{y} | w, X, \sigma^2, \gamma^2) = \mathcal{N}(\bm{y}|0, \sigma^2 + g(X, w) \gamma^2 g(X, w)^T)
+        $$
+
+        $$
+        p(\bm{y} | w, X, \sigma^2, \gamma^2) = \dfrac{1}{\sqrt{2\pi (\sigma^2 + g(X, w)^2 \gamma^2 g(X, w)^T)}} \exp (- \dfrac{1}{2 (\sigma^2 + g(X, w) \gamma^2 g(X, w)^T)} y^T y)
+        $$
+
+        This is a closed-form solution for $p(\bm{y} | w, X, \sigma^2, \gamma^2)$, so the analytical expression is available.
+
+        $$\square$$
+
+        We can also marginalize across $w$:
+
+        $$
+        p(\bm{y} | X, \sigma^2, \gamma^2, \lambda^2) = \int p(\bm{y} | w, X, \sigma^2, \gamma^2) p(w | \lambda^2) dw
+        $$
+
+        $$
+        p(\bm{y} | X, \sigma^2, \gamma^2, \lambda^2) = \int \mathcal{N}(\bm{y}|0, \sigma^2 + g(X, w) \gamma^2 g(X, w)^T) \mathcal{N}(w|0, \lambda^2) dw
+        $$
+
+        % $$
+        % p(\bm{y} | X, \sigma^2, \gamma^2, \lambda^2) = \int \dfrac{1}{\sqrt{2\pi(\sigma^2 + g(X, w) \gamma^2 g(X, w)^T)}} \exp (-\dfrac{y^T y}{2 (\sigma^2 + g(X, w) \gamma^2 g(X, w)^T)}) \dfrac{1}{\lambda \sqrt{2\pi}} \exp (-\dfrac{w^2}{2 \lambda^2}) dw
+        % $$
+
+        $$
+        p(\bm{y} | X, \sigma^2, \gamma^2, \lambda^2) = \int \dfrac{1}{2\pi \lambda\sqrt{(\sigma^2 + g(X, w) \gamma^2 g(X, w)^T)}} \exp (-\dfrac{y^T y}{2 (\sigma^2 + g(X, w) \gamma^2 g(X, w)^T)} -\dfrac{w^2}{2 \lambda^2}) dw
+        $$
+
+        with $m = (\sigma^2 + g(X, w) \gamma^2 g(X, w)^T)$:
+
+        $$
+        p(\bm{y} | X, \sigma^2, \gamma^2, \lambda^2) = \int \dfrac{1}{2\pi \lambda\sqrt{m}} \exp (-\dfrac{\lambda^2 y^T y + w^2 m}{2 m \lambda^2}) dw
+        $$
+
+        $$
+        p(\bm{y} | X, \sigma^2, \gamma^2, \lambda^2) = \int \dfrac{\sqrt{m^{-1}}}{2\pi \lambda} \exp (-\dfrac{(\lambda^2 y^T y + w^2 m) m^{-1}}{2 \lambda^2}) dw
+        $$
+
+        Using Woodbury on $m$:
+
+        $$
+        m = (\sigma^2 + g(X, w) \gamma^2 g(X, w)^T)
+        $$
+
+        $$
+        m^{-1} = (\sigma^2 + g(X, w) \gamma^2 g(X, w)^T)^{-1}
+        $$
+
+        $$
+        m^{-1} = \sigma^{-2} - \sigma^{-2}g(X, w)(\gamma^{-2} + g(X, w)^T\sigma^{-2}g(X, w))^{-1} g(X, w)^T\sigma^{-2}
+        $$
+
+        $$
+        m^{-1} = \sigma^{-2} - \dfrac{\sigma^{-2}g(X, w)g(X, w)^T\sigma^{-2}}{(\gamma^{-2} + g(X, w)^T\sigma^{-2}g(X, w))}
+        $$
+
+        Plugging this into the above expression yields an expression that has far too many dependencies on $w$ for a closed form solution to be available.
+
+        $$\square$$
+    \end{solution}
+
+\end{enumerate}
+\vspace{5mm}
+\textbf{Bonus question}:
+
+You are given 12 balls, all equal in weight except for one that is either heavier or lighter. You are
+also given a two-pan balance to use. In each use of the balance you may put any number of the
+12 balls on the left pan, and the same number on the right pan, and push a button to initiate
+the weighing; there are three possible outcomes: either the weights are equal, or the balls on the
+left are heavier, or the balls on the left are lighter. Your task is to design a strategy to determine
+which is the odd ball and whether it is heavier or lighter than the others in as few uses of the
+balance as possible.
+
+\end{enumerate}
+
+\end{document}
+

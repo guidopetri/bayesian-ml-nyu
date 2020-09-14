@@ -1,0 +1,131 @@
+\documentclass[11pt]{article}
+
+\usepackage{amsmath, amssymb, amsthm} % ams packages %amsfonts is loaded by amssymb
+\usepackage[all,warning]{onlyamsmath}
+\usepackage{graphics, graphicx} % graphics packages
+
+
+\usepackage[margin=1in]{geometry} % more reasonable margins
+\usepackage{booktabs} % prettier tables
+\usepackage{units} % prettier fractions (?)
+
+% Small sections of multiple columns
+\usepackage{multicol}
+
+\usepackage{bm}
+
+\usepackage{natbib}
+
+\usepackage{tikz} % make graphics in latex
+\usetikzlibrary{shapes,decorations}
+\usetikzlibrary{arrows}
+\usepackage{pgfplots} % to make plots in latex
+\pgfplotsset{compat=newest} % compatibility issue
+\usepackage{enumitem, comment}
+
+% formatting
+\usepackage{fancyhdr} % for changing headers and footers
+\usepackage{url} % url 
+\usepackage[normalem]{ulem}
+\usepackage{color} % colored text + names %deprecated?
+
+
+
+% hyperlink in the document
+\usepackage{hyperref} % must be the last package loaded
+
+\usepackage{comment}
+
+\usepackage{parskip}
+
+% notations
+\newcommand{\one}{\ensuremath{\mathbf{1}}}
+\newcommand{\zero}{\ensuremath{\mathbf{0}}}
+\newcommand{\prob}{\ensuremath{\mathbf{P}}}
+\newcommand{\expec}{\ensuremath{\mathbf{E}}}
+\newcommand{\ind}{\ensuremath{\mathbf{I}}}
+\newcommand{\reals}{\ensuremath{\mathbb{R}}}
+\newcommand{\naturals}{\ensuremath{\mathbb{N}}}
+\newcommand{\defeq}{\ensuremath{\triangleq}}
+\newcommand{\sP}{\ensuremath{\mathsf{P}}}
+\newcommand{\sQ}{\ensuremath{\mathsf{Q}}}
+\newcommand{\sE}{\ensuremath{\mathsf{E}}}
+
+\newcommand{\mbf}[1]{{\boldsymbol{\mathbf{#1}}}}
+\renewcommand{\bm}{\mbf}
+
+
+% environments
+\newtheorem{theorem}{Theorem}
+\newtheorem{proposition}{Proposition}
+\newtheorem{corollary}{Corollary}
+\newtheorem{lemma}{Lemma}
+\newtheorem{remark}{Remark}
+\newtheorem{definition}{Definition}
+\newtheorem{assumption}{Assumption}
+
+
+\title{\vspace{-20mm} Bayesian Machine Learning \\ \vspace{5mm}  \normalsize Instructor: Andrew Gordon Wilson}
+\date{}
+\author{
+\textbf{Homework 1} \\ \textbf{Due: Monday September 14 (EOD) via NYU Classes} }
+
+
+\begin{document}
+\maketitle
+
+Show all steps, and any code used to answer the questions.
+
+\begin{enumerate}
+\item Suppose we have data $\mathcal{D} = \{(x_i, y_i)\}_{i=1}^{n}$, and $n$ is the total number
+of training points.  Assume we want to learn the regression model
+\begin{align}
+y = a x  + \epsilon \,,  \label{eqn: first}
+\end{align}
+where $\epsilon$ is independent zero mean Gaussian noise with variance $\sigma^2$: 
+$\epsilon \sim \mathcal{N}(0,\sigma^2)$.
+\begin{enumerate}[label=(\alph*)]
+\item (2 marks): Let $\bm{y} = (y_1,\dots,y_n)^{\top}$ and $X = \{x_i\}_{i=1}^{n}$.  Derive the 
+log likelihood for the whole training set, $\log p(\bm{y} | X, a, \sigma^2)$.
+\item (2 marks): Given data $\mathcal{D} = \{(4,21), (9,59), (7,25), (15,127)\}$, find the maximum
+likelihood solutions for $a$ and $\sigma^2$.
+\item (2 marks): Suppose we instead consider the regression model 
+\begin{align}
+x = b y + \epsilon \,.
+\end{align}
+Is the maximum likelihood solution for $b = \frac{1}{a}$?  Explain why or why not -- with derivations if necessary.
+\item (2 marks): Suppose we place a prior distribution on $a$ such that $p(a | \gamma^2) = \mathcal{N}(0,\gamma^2)$.  Use
+the sum and product rules of probability to write down the \emph{marginal likelihood} of the data, 
+$p(\bm{y} | X, \sigma^2, \gamma^2)$, conditioned only on $X, \sigma^2, \gamma^2$.  
+\item (2 marks): Without explicitly using the sum and product rules, derive $p(\bm{y} | X, \sigma^2, \gamma^2)$, by considering 
+the properties of Gaussian distributions and finding expectations and covariances.  This expression should look different
+than your answer to the previous question.  Comment on the differences in computational complexity.  \textbf{Bonus (1 mark)}:
+show that both representations in (d) and (e) are mathematically equivalent.
+\item (2 marks): What are the maximum marginal likelihood solutions $\hat{\sigma}^2 =  \text{argmax}_{\sigma^2} p(\bm{y} | X, \sigma^2, \gamma^2)$ and 
+$\hat{\gamma}^2 =  \text{argmax}_{\gamma^2} p(\bm{y} | X, \sigma^2, \gamma^2)$?
+\item (2 marks): Derive the predictive distribution for $p( y_* | {x}_*, \hat{\sigma}^2, \hat{\gamma}^2, \mathcal{D})$ for any arbitrary test point $x_*$,
+where $y_* = y(x_*)$.
+\item (2 marks): For the dataset $\mathcal{D}$ in (b), give the predictive mean $\mathbb{E}[y_* | x_*, \hat{\sigma}^2, \hat{\gamma}^2, \mathcal{D}]$ and predictive variance $\text{var}(y_* |  x_*, \hat{\sigma}^2, \hat{\gamma}^2, \mathcal{D})$ for $x_* = 14$.
+\item (2 marks): Suppose we replace $x$ in Eq.~\eqref{eqn: first} with $g(x,w)$, where $g$ is a non-linear function parametrized by $w$,
+and $w \sim \mathcal{N}(0,\lambda^2)$: e.g., $g(x,w) = \cos (w x)$.  Can you write down an analytic expression for $p(\bm{y} | w, X, \sigma^2, \gamma^2)$?  How about $p(\bm{y} | X, \sigma^2, \gamma^2, \lambda^2)$?  Justify your answers.
+
+\end{enumerate}
+\vspace{5mm}
+\textbf{Bonus question}:
+
+%\includegraphics[scale=0.5]{weighing.png}\\
+
+
+You are given 12 balls, all equal in weight except for one that is either heavier or lighter. You are
+also given a two-pan balance to use. In each use of the balance you may put any number of the
+12 balls on the left pan, and the same number on the right pan, and push a button to initiate
+the weighing; there are three possible outcomes: either the weights are equal, or the balls on the
+left are heavier, or the balls on the left are lighter. Your task is to design a strategy to determine
+which is the odd ball and whether it is heavier or lighter than the others in as few uses of the
+balance as possible.
+
+\end{enumerate}
+
+
+\end{document}
+
