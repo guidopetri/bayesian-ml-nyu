@@ -1,0 +1,512 @@
+\documentclass[11pt]{article}
+
+\usepackage{amsmath, amssymb, amsthm} % ams packages %amsfonts is loaded by amssymb
+%\usepackage[all,warning]{onlyamsmath}
+\usepackage{graphics, graphicx} % graphics packages
+
+
+\usepackage[margin=1in]{geometry} % more reasonable margins
+\usepackage{booktabs} % prettier tables
+\usepackage{units} % prettier fractions (?)
+
+% Small sections of multiple columns
+\usepackage{multicol}
+
+\usepackage{bm}
+\usepackage{url}
+
+\usepackage{natbib}
+
+\usepackage{tikz} % make graphics in latex
+\usetikzlibrary{shapes,decorations}
+\usetikzlibrary{arrows}
+\usepackage{pgfplots} % to make plots in latex
+\pgfplotsset{compat=newest} % compatibility issue
+\usepackage{enumitem, comment}
+
+% formatting
+\usepackage{fancyhdr} % for changing headers and footers
+\usepackage{url} % url 
+\usepackage[normalem]{ulem}
+\usepackage{color} % colored text + names %deprecated?
+
+
+
+% hyperlink in the document
+\usepackage{hyperref} % must be the last package loaded
+
+\usepackage{comment}
+
+\usepackage{parskip}
+
+% notations
+\newcommand{\one}{\ensuremath{\mathbf{1}}}
+\newcommand{\zero}{\ensuremath{\mathbf{0}}}
+\newcommand{\prob}{\ensuremath{\mathbf{P}}}
+\newcommand{\expec}{\ensuremath{\mathbf{E}}}
+\newcommand{\ind}{\ensuremath{\mathbf{I}}}
+\newcommand{\reals}{\ensuremath{\mathbb{R}}}
+\newcommand{\naturals}{\ensuremath{\mathbb{N}}}
+\newcommand{\defeq}{\ensuremath{\triangleq}}
+\newcommand{\sP}{\ensuremath{\mathsf{P}}}
+\newcommand{\sQ}{\ensuremath{\mathsf{Q}}}
+\newcommand{\sE}{\ensuremath{\mathsf{E}}}
+\newcommand{\normal}{\mathcal{N}}
+
+\newcommand{\mbf}[1]{{\boldsymbol{\mathbf{#1}}}}
+\renewcommand{\bm}{\mbf}
+\newcommand{\Tr}{\textrm{Tr}}
+\newcommand{\adj}{\textrm{adj}}
+
+
+% environments
+\newtheorem{theorem}{Theorem}
+\newtheorem{proposition}{Proposition}
+\newtheorem{corollary}{Corollary}
+\newtheorem{lemma}{Lemma}
+\newtheorem{remark}{Remark}
+\newtheorem{definition}{Definition}
+\newtheorem{assumption}{Assumption}
+
+
+
+\title{\vspace{-20mm} Bayesian Machine Learning}
+\date{}
+\author{
+\textbf{Homework 3 - Solution}  \\ \textbf{Due: Tuesday, October 20, 11:55 pm}}
+\begin{document}
+\maketitle
+
+\begin{enumerate}
+    \item: Bayesian linear regression model
+    \begin{enumerate}[label=(\alph*)]
+        \item: Directed graphical model.
+
+            \begin{figure}[htbp]
+            \centering
+            \includegraphics[scale=0.45]{directed_graphical_model.pdf}
+            \caption{Joint distribution over all parameters of the Bayesian linear regression model.}
+            \end{figure}
+
+        \item: Expression for the log marginal likelihood $\log p(\bm{y} | \bm{z}, X, \alpha^2, \sigma^2)$
+
+            $$
+            p(\bm{y}|\bm{z}, \bm{x}, \alpha^2, \sigma^2) = \int p(\bm{y}|\bm{z}, \bm{x}, \sigma^2, \bm{w}) p(\bm{w} | \alpha^2) d\bm{w}
+            $$
+
+            $$
+            p(\bm{y}|\bm{z}, \bm{x}, \alpha^2, \sigma^2) = \int \normal(\bm{y}|\bm{w}^T \phi(\bm{x}, \bm{z}), \sigma^2) \normal(\bm{w}|0, \alpha^2 \ind) d\bm{w}
+            $$
+
+            With the result from Homework 1, exercise (i) (or alternatively, Bishop 2.115):
+
+            $$
+            p(\bm{y}|\bm{z}, \bm{x}, \alpha^2, \sigma^2) = \normal(\bm{y}|0, \sigma^2 + \phi(\bm{x}, \bm{z}) \alpha^2 \phi(\bm{x}, \bm{z})^T)
+            $$
+
+            Expanding for all $\bm{x} \in X$:
+
+            $$
+            p(\bm{y}|\bm{z}, X, \alpha^2, \sigma^2) = \prod_{i} \normal(y_i|0, \sigma^2 + \phi(\bm{x}_i, \bm{z}) \alpha^2 \phi(\bm{x}_i, \bm{z})^T)
+            $$
+
+            $$
+            p(\bm{y}|\bm{z}, X, \alpha^2, \sigma^2) = \prod_{i} \dfrac{1}{\sqrt{2\pi(\sigma^2 + \phi(\bm{x}_i, \bm{z}) \alpha^2 \phi(\bm{x}_i, \bm{z})^T)}} \exp (-\dfrac{y_i^2}{2(\sigma^2 + \phi(\bm{x}_i, \bm{z}) \alpha^2 \phi(\bm{x}_i, \bm{z})^T)})
+            $$
+
+            Finally, taking the logarithm:
+
+            $$
+            \log p(\bm{y}|\bm{z}, X, \alpha^2, \sigma^2) = \sum_{i} \log (\dfrac{1}{\sqrt{2\pi(\sigma^2 + \phi(\bm{x}_i, \bm{z}) \alpha^2 \phi(\bm{x}_i, \bm{z})^T)}} \exp (-\dfrac{y_i^2}{2(\sigma^2 + \phi(\bm{x}_i, \bm{z}) \alpha^2 \phi(\bm{x}_i, \bm{z})^T)}))
+            $$
+
+            $$
+            \log p(\bm{y}|\bm{z}, X, \alpha^2, \sigma^2) = \sum_{i} \log (\dfrac{1}{\sqrt{2\pi(\sigma^2 + \phi(\bm{x}_i, \bm{z}) \alpha^2 \phi(\bm{x}_i, \bm{z})^T)}}) + (-\dfrac{y_i^2}{2(\sigma^2 + \phi(\bm{x}_i, \bm{z}) \alpha^2 \phi(\bm{x}_i, \bm{z})^T)})
+            $$
+
+            $$
+            \log p(\bm{y}|\bm{z}, X, \alpha^2, \sigma^2) = \sum_{i} - \log \sqrt{2\pi(\sigma^2 + \phi(\bm{x}_i, \bm{z}) \alpha^2 \phi(\bm{x}_i, \bm{z})^T)} - \dfrac{y_i^2}{2(\sigma^2 + \phi(\bm{x}_i, \bm{z}) \alpha^2 \phi(\bm{x}_i, \bm{z})^T)}
+            $$
+
+            $$
+            \log p(\bm{y}|\bm{z}, X, \alpha^2, \sigma^2) = - \sum_{i} \dfrac{1}{2} \log 2\pi(\sigma^2 + \phi(\bm{x}_i, \bm{z}) \alpha^2 \phi(\bm{x}_i, \bm{z})^T) + \dfrac{y_i^2}{2(\sigma^2 + \phi(\bm{x}_i, \bm{z}) \alpha^2 \phi(\bm{x}_i, \bm{z})^T)}
+            $$
+
+            $$
+            \log p(\bm{y}|\bm{z}, X, \alpha^2, \sigma^2) = - \dfrac{N}{2}\log 2 - \dfrac{N}{2}\log \pi - \dfrac{1}{2} \sum_{i} \log (\sigma^2 + \phi(\bm{x}_i, \bm{z}) \alpha^2 \phi(\bm{x}_i, \bm{z})^T) + \dfrac{y_i^2}{\sigma^2 + \phi(\bm{x}_i, \bm{z}) \alpha^2 \phi(\bm{x}_i, \bm{z})^T}
+            $$
+
+            In matrix form:
+
+            % $$
+            % \log p(\bm{y}|\bm{z}, X, \alpha^2, \sigma^2) = - N\log 2\pi - \dfrac{1}{2} \log (\sigma^2 \ind + \Phi(X, \bm{z}) \alpha^2 \ind \Phi(X, \bm{z})^T) - \dfrac{1}{2} \dfrac{\bm{y}^T\bm{y}}{(\sigma^2 \ind + \Phi(X, \bm{z}) \alpha^2 \ind \Phi(X, \bm{z})^T)}
+            % $$
+
+            $$
+            \log p(\bm{y}|\bm{z}, X, \alpha^2, \sigma^2) = - \dfrac{N}{2}\log 2\pi - \dfrac{1}{2} \log (|\sigma^2 \ind + \Phi(X, \bm{z}) \alpha^2 \Phi(X, \bm{z})^T|) - \dfrac{1}{2} \bm{y}^T(\sigma^2 \ind + \Phi(X, \bm{z}) \alpha^2 \Phi(X, \bm{z})^T)^{-1}\bm{y}
+            $$
+
+            where we have defined $\Phi(X, z) = [\phi(x_1, z), \dots, \phi(x_n, z)]^T$. We can rewrite the above using properties of determinants, as well as Woodbury:
+
+            $$
+            \log p(\bm{y}|\bm{z}, X, \alpha^2, \sigma^2) = - \dfrac{N}{2}\log 2\pi - \dfrac{1}{2} \log (\dfrac{|\sigma^2 \ind|}{|-\alpha^{-2}\ind|} |-\alpha^{-2} \ind - \Phi(X, \bm{z})^T \sigma^{-2} \Phi(X, \bm{z})|) $$$$- \dfrac{1}{2} \bm{y}^T(\sigma^{-2}\ind - \sigma^{-2} \Phi(X, \bm{z}) (\alpha^{-2} \ind + \Phi(X, \bm{z})^T \sigma^{-2} \Phi(X, \bm{z}))^{-1}\Phi(X, \bm{z})^T \sigma^{-2})\bm{y}
+            $$
+
+            $$
+            \log p(\bm{y}|\bm{z}, X, \alpha^2, \sigma^2) = - \dfrac{N}{2}\log 2\pi - \dfrac{1}{2} \log (\sigma^{2N}\alpha^{2k}) - \dfrac{1}{2} \log(|-\alpha^{-2} \ind - \Phi(X, \bm{z})^T \sigma^{-2} \Phi(X, \bm{z})|) $$$$- \dfrac{1}{2 \sigma^{2}} \bm{y}^T \bm{y} + \dfrac{1}{2 \sigma^4} \bm{y}^T \Phi(X, \bm{z}) (\alpha^{-2} \ind + \Phi(X, \bm{z})^T \sigma^{-2} \Phi(X, \bm{z}))^{-1}\Phi(X, \bm{z})^T\bm{y}
+            $$
+
+            with $k$ as the dimensionality of $\phi(x, \bm{z})$ (this will be useful for exercise 3).
+
+            % For easier understanding, we'll redefine $\Phi(X, z)$ to be its transpose and switch the transposition operators around:
+
+            % $$
+            % \log p(\bm{y}|\bm{z}, X, \alpha^2, \sigma^2) = - N\log 2\pi - \dfrac{1}{2} \log (|\sigma^2 \ind + \Phi(X, \bm{z})^T \alpha^2 \ind \Phi(X, \bm{z})|) - \dfrac{1}{2} \dfrac{\bm{y}^T\bm{y}}{(\sigma^2 \ind + \Phi(X, \bm{z})^T \alpha^2 \ind \Phi(X, \bm{z}))}
+            % $$
+
+            $$\square$$
+
+        \item: Expressions for the derivatives of the log marginal likelihood with respect to hyperparameters $\bm{z}$, $\alpha^2$, and $\sigma^2$.
+
+            We will redefine the covariance matrix of our distribution as $\Sigma(X, \bm{z}, \alpha^2, \sigma^2) = \alpha^{-2} \ind + \Phi(X, \bm{z})^T \sigma^{-2} \Phi(X, \bm{z})$ for readability.
+
+            Taking the derivative with respect to $\alpha^2$:
+
+            $$
+            \dfrac{\partial \log p(\bm{y}|\bm{z}, X, \alpha^2, \sigma^2)}{\partial \alpha^2} = - \dfrac{1}{2} \dfrac{\partial k \log (\sigma^{2\frac{N}{k}}\alpha^{2})}{\partial \alpha^2} - \dfrac{1}{2} \dfrac{\partial \log(|-\Sigma|)}{\partial \alpha^2} + \dfrac{1}{2 \sigma^4} \bm{y}^T \Phi(X, \bm{z}) \dfrac{\partial \Sigma^{-1}}{\partial \alpha^2} \Phi(X, \bm{z})^T\bm{y}
+            $$
+
+            Using the matrix identities for the derivative of a determinant:
+
+            $$
+            \dfrac{\partial \log p(\bm{y}|\bm{z}, X, \alpha^2, \sigma^2)}{\partial \alpha^2} = - \dfrac{1}{2} \dfrac{k}{\alpha^2} - \dfrac{1}{2} \Tr((-\Sigma)^{-1} \dfrac{\partial -\Sigma}{\partial \alpha^2}) - \dfrac{1}{2 \sigma^4} \bm{y}^T \Phi(X, \bm{z}) \Sigma^{-1} \dfrac{\partial \Sigma}{\partial \alpha^2} \Sigma^{-1} \Phi(X, \bm{z})^T\bm{y}
+            $$
+            Replacing $\Sigma$'s derivative:
+
+            $$
+            \dfrac{\partial \log p(\bm{y}|\bm{z}, X, \alpha^2, \sigma^2)}{\partial \alpha^2} = - \dfrac{1}{2} \dfrac{k}{\alpha^2} + \dfrac{1}{2 \alpha^4} \Tr(\Sigma^{-1}) + \dfrac{1}{2 \sigma^4 \alpha^4} \bm{y}^T \Phi(X, \bm{z}) \Sigma^{-1} \Sigma^{-1} \Phi(X, \bm{z})^T\bm{y}
+            $$
+
+            $$\square$$
+
+            Taking the derivative with respect to $\sigma^2$:
+
+            $$
+            \dfrac{\partial \log p(\bm{y}|\bm{z}, X, \alpha^2, \sigma^2)}{\partial \sigma^2} = - \dfrac{1}{2} (N \dfrac{\partial \log (\sigma^{2}\alpha^{2\frac{k}{N}})}{\partial \sigma^2} + \dfrac{\partial \log(|-\Sigma|)}{\partial \sigma^2} + \bm{y}^T \bm{y} \dfrac{\partial \sigma^{-2}}{\partial \sigma^2} - \bm{y}^T \Phi(X, \bm{z}) \dfrac{\partial \Sigma^{-1} \sigma^{-4}}{\partial \sigma^2} \Phi(X, \bm{z})^T\bm{y})
+            $$
+
+            $$
+            \dfrac{\partial \log p(\bm{y}|\bm{z}, X, \alpha^2, \sigma^2)}{\partial \sigma^2} = - \dfrac{1}{2} (\dfrac{N}{\sigma^2} + \Tr((-\Sigma)^{-1} \dfrac{\partial -\Sigma}{\partial \sigma^2}) - \dfrac{\bm{y}^T \bm{y}}{\sigma^4} - \bm{y}^T \Phi(X, \bm{z}) \dfrac{\partial \Sigma^{-1} \sigma^{-4}}{\partial \sigma^2} \Phi(X, \bm{z})^T\bm{y})
+            $$
+
+            $$
+            \dfrac{\partial \log p(\bm{y}|\bm{z}, X, \alpha^2, \sigma^2)}{\partial \sigma^2} = - \dfrac{1}{2} (\dfrac{N}{\sigma^2} - \dfrac{\Tr(\Sigma^{-1} \Phi(X, \bm{z})^T \Phi(X, \bm{z}))}{\sigma^4} - \dfrac{\bm{y}^T \bm{y}}{\sigma^4} - \bm{y}^T \Phi(X, \bm{z}) \dfrac{\partial \Sigma^{-1} \sigma^{-4}}{\partial \sigma^2} \Phi(X, \bm{z})^T\bm{y})
+            $$
+
+            The derivative of the last term is complicated:
+
+            $$
+            \dfrac{\partial \Sigma^{-1} \sigma^{-4}}{\partial \sigma^2}
+            $$
+
+            $$
+            \dfrac{\partial \Sigma^{-1}}{\partial \sigma^2} \sigma^{-4} + \Sigma^{-1} \dfrac{\partial \sigma^{-4}}{\partial \sigma^2}
+            $$
+
+            $$
+            - \Sigma^{-1} \dfrac{\partial \Sigma}{\partial \sigma^2} \Sigma^{-1} \sigma^{-4} - 2 \Sigma^{-1} \sigma^{-6}
+            $$
+
+            $$
+            \Sigma^{-1} \Phi(X, \bm{z})^T \Phi(X, \bm{z}) \Sigma^{-1} \sigma^{-8} - 2 \Sigma^{-1} \sigma^{-6}
+            $$
+
+            Plugging this back in:
+
+            $$
+            \dfrac{\partial \log p(\bm{y}|\bm{z}, X, \alpha^2, \sigma^2)}{\partial \sigma^2} = - \dfrac{1}{2} (\dfrac{N}{\sigma^2} - \dfrac{\Tr(\Sigma^{-1} \Phi(X, \bm{z})^T \Phi(X, \bm{z}))}{\sigma^4} - \dfrac{\bm{y}^T \bm{y}}{\sigma^4}$$$$ - \dfrac{\bm{y}^T \Phi(X, \bm{z}) (\Sigma^{-1} \Phi(X, \bm{z})^T \Phi(X, \bm{z}) \Sigma^{-1} \sigma^{-2} - 2 \Sigma^{-1}) \Phi(X, \bm{z})^T\bm{y}}{\sigma^6})
+            $$
+
+            $$\square$$
+
+            Taking the derivative with respect to $\bm{z}$:
+
+            $$
+            \dfrac{\partial \log p(\bm{y}|\bm{z}, X, \alpha^2, \sigma^2)}{\partial \bm{z}} = - \dfrac{1}{2} \dfrac{\partial \log(|-\Sigma|)}{\partial \bm{z}} + \dfrac{1}{2 \sigma^4} \bm{y}^T \dfrac{\partial \Phi(X, \bm{z}) \Sigma^{-1} \Phi(X, \bm{z})^T}{\partial \bm{z}} \bm{y}
+            $$
+
+            $$
+            \dfrac{\partial \log p(\bm{y}|\bm{z}, X, \alpha^2, \sigma^2)}{\partial \bm{z}} = - \dfrac{1}{2} \Tr(\Sigma^{-1} \dfrac{\partial \Sigma}{\partial \bm{z}}) + \dfrac{1}{2 \sigma^4} \bm{y}^T \dfrac{\partial \Phi(X, \bm{z}) \Sigma^{-1} \Phi(X, \bm{z})^T}{\partial \bm{z}} \bm{y}
+            $$
+
+            For the derivative of $\Sigma$ with respect to $\bm{z}$:
+
+            $$
+            \dfrac{\partial \Sigma}{\partial \bm{z}}
+            $$
+
+            $$
+            \sigma^{-2} \dfrac{\partial \Phi(X, \bm{z})^T \Phi(X, \bm{z})}{\partial \bm{z}}
+            $$
+
+            $$
+            \sigma^{-2} (\dfrac{\partial \Phi(X, \bm{z})^T}{\partial \bm{z}} \Phi(X, \bm{z}) + \Phi(X, \bm{z})^T \dfrac{\partial \Phi(X, \bm{z})}{\partial \bm{z}})
+            $$
+
+            We don't know anything about $\phi$, so this is as far as we can simplify. As for the second term of our derivative above:
+
+            $$
+            \dfrac{\partial \Phi(X, \bm{z}) \Sigma^{-1} \Phi(X, \bm{z})^T}{\partial \bm{z}}
+            $$
+
+            $$
+            \dfrac{\partial \Phi(X, \bm{z})}{\partial \bm{z}} \Sigma^{-1} \Phi(X, \bm{z})^T + \Phi(X, \bm{z}) \dfrac{\partial \Sigma^{-1} \Phi(X, \bm{z})^T}{\partial \bm{z}}
+            $$
+
+            $$
+            \dfrac{\partial \Phi(X, \bm{z})}{\partial \bm{z}} \Sigma^{-1} \Phi(X, \bm{z})^T + \Phi(X, \bm{z}) (\dfrac{\partial \Sigma^{-1}}{\partial \bm{z}} \Phi(X, \bm{z})^T + \Sigma^{-1} \dfrac{\partial \Phi(X, \bm{z})^T}{\partial \bm{z}})
+            $$
+
+            $$
+            \dfrac{\partial \Phi(X, \bm{z})}{\partial \bm{z}} \Sigma^{-1} \Phi(X, \bm{z})^T + \Phi(X, \bm{z}) \dfrac{\partial \Sigma^{-1}}{\partial \bm{z}} \Phi(X, \bm{z})^T + \Phi(X, \bm{z}) \Sigma^{-1} \dfrac{\partial \Phi(X, \bm{z})^T}{\partial \bm{z}}
+            $$
+
+            $$
+            \dfrac{\partial \Phi(X, \bm{z})}{\partial \bm{z}} \Sigma^{-1} \Phi(X, \bm{z})^T - \Phi(X, \bm{z}) \Sigma^{-1} \dfrac{\partial \Sigma}{\partial \bm{z}} \Sigma^{-1} \Phi(X, \bm{z})^T + \Phi(X, \bm{z}) \Sigma^{-1} \dfrac{\partial \Phi(X, \bm{z})^T}{\partial \bm{z}}
+            $$
+
+            $$
+            \dfrac{\partial \Phi(X, \bm{z})}{\partial \bm{z}} \Sigma^{-1} \Phi(X, \bm{z})^T - \Phi(X, \bm{z}) \Sigma^{-1} \sigma^{-2} (\dfrac{\partial \Phi(X, \bm{z})^T}{\partial \bm{z}} \Phi(X, \bm{z}) + \Phi(X, \bm{z})^T \dfrac{\partial \Phi(X, \bm{z})}{\partial \bm{z}}) \Sigma^{-1} \Phi(X, \bm{z})^T$$$$ + \Phi(X, \bm{z}) \Sigma^{-1} \dfrac{\partial \Phi(X, \bm{z})^T}{\partial \bm{z}}
+            $$
+
+            Again, we cannot simplify further. Plugging this back into our derivative:
+
+            $$
+            \dfrac{\partial \log p(\bm{y}|\bm{z}, X, \alpha^2, \sigma^2)}{\partial \bm{z}} = - \dfrac{1}{2\sigma^2} \Tr(\Sigma^{-1} (\dfrac{\partial \Phi(X, \bm{z})^T}{\partial \bm{z}} \Phi(X, \bm{z}) + \Phi(X, \bm{z})^T \dfrac{\partial \Phi(X, \bm{z})}{\partial \bm{z}}))$$$$ + \dfrac{1}{2 \sigma^4} \bm{y}^T (\dfrac{\partial \Phi(X, \bm{z})}{\partial \bm{z}} \Sigma^{-1} \Phi(X, \bm{z})^T - \Phi(X, \bm{z}) \Sigma^{-1} \sigma^{-2} (\dfrac{\partial \Phi(X, \bm{z})^T}{\partial \bm{z}} \Phi(X, \bm{z}) + \Phi(X, \bm{z})^T \dfrac{\partial \Phi(X, \bm{z})}{\partial \bm{z}}) \Sigma^{-1} \Phi(X, \bm{z})^T$$$$ + \Phi(X, \bm{z}) \Sigma^{-1} \dfrac{\partial \Phi(X, \bm{z})^T}{\partial \bm{z}}) \bm{y}
+            $$
+
+            The derivative of a matrix with respect to a vector is a tensor. Since we do not have a good way of displaying this notation, we will instead display this derivative as:
+
+            $$
+            [\dfrac{\partial \log p(\bm{y}|\bm{z}, X, \alpha^2, \sigma^2)}{\partial z_1}), \dots, \dfrac{\partial \log p(\bm{y}|\bm{z}, X, \alpha^2, \sigma^2)}{\partial z_f})]^T
+            $$
+
+            where $f$ is the number of elements of $z$. Indeed, this makes sense, since the derivative with respect to the vector $z$ should yield a derivative for each element in $z$. Unfortunately, this cannot be simplified any further.
+
+            $$\square$$
+
+            $$
+            \dfrac{\partial \log p(\bm{y}|\bm{z}, X, \alpha^2, \sigma^2)}{\partial \bm{z}} = - \dfrac{1}{2} [\Tr(\Sigma^{-1} \dfrac{\partial \Sigma}{\partial z_1}), \dots, \Tr(\Sigma^{-1} \dfrac{\partial \Sigma}{\partial z_f})]^T + [\bm{y}^T \dfrac{\partial \Sigma^{-1}}{\partial z_1} \bm{y}, \dots, \bm{y}^T \dfrac{\partial \Sigma^{-1}}{\partial z_f} \bm{y}]^T$$
+
+    \end{enumerate}
+
+    \item:
+    \begin{enumerate}[label=(\alph*)]
+        \item: Interpretation of the Occam factor $\frac{\sigma_{\theta|\mathcal{D}}}{\sigma_{\theta}}$.
+
+            The Occam factor represents the probability of achieving a certain set of parameters times the probability that that set of parameters yields the dataset in question. In the simplification that the prior is uniform over a certain length $\sigma_{\theta}$, the Occam factor simplifies to the above. With regard to figure 1, this represents the (approximate) ratio of the posterior density over the prior density, i.e. the larger the Occam factor, the less the posterior has shrunk the parameter space.
+
+            For simple models, the prior parameter space is already small; The posterior will shrink, but not by a lot, since there was already a small parameter space. This yields a relatively large Occam factor.
+
+            For complex models, the prior parameter space is very large; this yields a very large Occam factor since the posterior is still very "spread out" across the parameter space.
+
+            For appropriately sized models, the prior parameter space is "medium" size; the posterior shrinks a substantial amount, yielding a much lower Occam factor.
+
+        \item: Laplace's method to approximate the posterior $p(\bm{\theta} | \mathcal{M}, \mathcal{D})$. Interpret the terms in the log marginal likelihood of question 1(b).
+
+            % $$
+            % \dfrac{1}{p(\bm{\hat{\theta}} | \mathcal{M})} = \sqrt{2\pi c} \exp(\dfrac{1}{2c^2} (\bm{\theta} - \bm{\hat{\theta}})^2)
+            % $$
+
+            % $$
+            % \exp ( - \frac{c}{2} (\bm{\theta} - \bm{\hat{\theta}})^2)
+            % $$
+
+
+
+            The posterior $p(\bm{\theta}| \mathcal{M}, \mathcal{D})$ has a peak at $\bm{\hat{\theta}}$. Approximating the posterior as a Gaussian, we will have the normalizing constant
+
+            $$
+            Z_p = \int p(\bm{\theta} | \mathcal{M}, \mathcal{D}) d \bm{\theta}
+            $$
+
+            We can also take the Taylor expansion of the logarithm of this Gaussian around its peak of $\bm{\hat{\theta}}$, and simplifying notation by taking $p(\bm{\theta} | \mathcal{M}, \mathcal{D}) = P(w)$:
+
+            $$
+            \log P(w) \approx \log P(\hat{w}) + \dfrac{\partial \log P(\hat{w})}{\partial w} (w - \hat{w}) +  \dfrac{1}{2} (w - \hat{w})^T \dfrac{\partial^2 \log P(\hat{w})}{\partial w^2} (w - \hat{w})
+            $$
+
+            Since the peak is at $\hat{w}$:
+
+            $$
+            \log P(w) \approx \log P(\hat{w}) + \dfrac{1}{2} (w - \hat{w})^T \dfrac{\partial^2 \log P(\hat{w})}{\partial w^2} (w - \hat{w})
+            $$
+
+            Taking the definition of $A$ from the question, and knowing that the matrix is negative definite:
+
+            $$
+            \log P(w) \approx \log P(\hat{w}) - \dfrac{1}{2} |A| (w - \hat{w})^T (w - \hat{w})
+            $$
+
+            Removing the logarithm, and defining this as $Q(w)$, an unnormalized Gaussian:
+
+            $$
+            Q(w) = P(\hat{w}) \exp( - \dfrac{1}{2} |A|(w - \hat{w})^T (w - \hat{w}))
+            $$
+
+            Using the Gaussian integral definition to get the normalizing constant $Z_Q$, this is then approximately equal to the normalizing constant $Z_p$:
+
+            $$
+            Z_p \approx Z_Q = P(\hat{w}) \sqrt{\dfrac{(2 \pi)^d}{|A|}}
+            $$
+
+            $$
+            Z_p \approx (2 \pi)^{\frac{d}{2}} P(\hat{w}) \det(A)^{-\frac{1}{2}}
+            $$
+
+            with $d$ as the number of dimensions in $\theta$. Finally, inserting the likelihood times the prior:
+
+            $$
+            Z_p \approx p(\mathcal{D}|\hat{\theta}, \mathcal{M}) (2 \pi)^{\frac{d}{2}} p(\hat{\theta}|\mathcal{M}) \det(A)^{-\frac{1}{2}}
+            $$
+
+            Thus
+
+            $$
+            p(\mathcal{D}|\mathcal{M}) \approx p(\mathcal{D}|\hat{\theta}, \mathcal{M}) (2 \pi)^{\frac{d}{2}} p(\hat{\theta}|\mathcal{M}) \det(A)^{-\frac{1}{2}}
+            $$
+
+            We can then interpret the equation for $Z_p$ as the height of the prior at its peak, $p(\hat{\theta}|\mathcal{M})$, times its width, $\det(A)^{-\frac{1}{2}}$, times a proportionality constant dependent on the dimensionality of the weights $d$, as well as the likelihood.
+
+            Returning to our equation from exercise 1(b), 
+
+            $$
+            \log p(\bm{y}|\bm{z}, X, \alpha^2, \sigma^2) = - \dfrac{N}{2}\log 2\pi - \dfrac{1}{2} \log (|\sigma^2 \ind + \Phi(X, \bm{z}) \alpha^2 \Phi(X, \bm{z})^T|) - \dfrac{1}{2} \bm{y}^T(\sigma^2 \ind + \Phi(X, \bm{z}) \alpha^2 \Phi(X, \bm{z})^T)^{-1}\bm{y}
+            $$
+
+            we see that the matrix $A$ represents the error around the predictive mean in a multi-dimensional setting, or equivalently, the standard deviation of the multivariate Gaussian that is fit around our prediction. In exercise 1(b), $A = \sigma^2 \ind + \Phi(X, \bm{z}) \alpha^2 \Phi(X, \bm{z})^T$.
+
+            $$\square$$
+
+        \item: Approximation for the log evidence $\log p(D | \mathcal{M})$ in terms of $N$, $m$ (dimensionality $\bm{\theta}$), $\log p(D | \hat{\bm{\theta}})$.
+
+            Starting from our model evidence above, but using the dimensionality $m$ instead of number of datapoints $d$:
+
+            $$
+            p(\mathcal{D}|\mathcal{M}) \approx p(\mathcal{D}|\hat{\theta}, \mathcal{M}) (2 \pi)^{\frac{m}{2}} p(\hat{\theta}|\mathcal{M}) \det(A)^{-\frac{1}{2}}
+            $$
+
+            $$
+            \log p(\mathcal{D}|\mathcal{M}) \approx \log (p(\mathcal{D}|\hat{\theta}, \mathcal{M}) (2 \pi)^{\frac{m}{2}} p(\hat{\theta}|\mathcal{M}) \det(A)^{-\frac{1}{2}})
+            $$
+
+            $$
+            \log p(\mathcal{D}|\mathcal{M}) \approx \log p(\mathcal{D}|\hat{\theta}, \mathcal{M}) + \dfrac{m}{2} \log 2 \pi + \log p(\hat{\theta}| \mathcal{M}) - \dfrac{1}{2} \log \det(A)
+            $$
+
+            $A$ is simply a number-of-datapoints-scaled version of the Fisher information matrix $A_0$ for our distribution; thus,
+
+            $$
+            \log p(\mathcal{D}|\mathcal{M}) \approx \log p(\mathcal{D}|\hat{\theta}, \mathcal{M}) + \dfrac{m}{2} \log 2 \pi + \log p(\hat{\theta}| \mathcal{M}) - \dfrac{1}{2} \log \det(N A_0)
+            $$
+
+            $$
+            \log p(\mathcal{D}|\mathcal{M}) \approx \log p(\mathcal{D}|\hat{\theta}, \mathcal{M}) + \dfrac{m}{2} \log 2 \pi + \log p(\hat{\theta}| \mathcal{M}) - \dfrac{1}{2} \log (N^m \det(A_0))
+            $$
+
+            (where we use the determinant of a constant times the identity)
+
+            $$
+            \log p(\mathcal{D}|\mathcal{M}) \approx \log p(\mathcal{D}|\hat{\theta}, \mathcal{M}) + \dfrac{m}{2} \log 2 \pi + \log p(\hat{\theta}|\mathcal{M}) - \dfrac{m}{2} \log N - \dfrac{1}{2} \log \det(A_0)
+            $$
+
+            With a growing number of datapoints $N$, we can approximate the log evidence while ignoring anything that does not scale with $N$, or that depends only on the prior:
+
+            $$
+            \log p(\mathcal{D}|\mathcal{M}) \approx \log p(\mathcal{D}|\hat{\theta}, \mathcal{M}) - \dfrac{m}{2} \log N
+            $$
+
+            The equation above is known as the \emph{Bayesian Information Criterion}.
+
+            $$\square$$
+
+        \item: Hessian $A$ and its relation to the covariance matrix.
+
+            Partly done in 2(b). The Hessian $A$ is a function of the covariance matrix of the Gaussian prior over parameters; in exercise 1(b), it was $A = \sigma^2 \ind + \Phi(X, \bm{z}) \alpha^2 \Phi(X, \bm{z})^T$. It is essentially a modification of the Gaussian prior variance with relation to the function $\phi$ used on the inputs and with the additional noise from $\epsilon$, $\sigma^2$ applied to the diagonals.
+
+    \end{enumerate}
+
+    \item: Coding.
+    
+    \begin{enumerate}
+        \item: Histogram of the evidence for each of the models, conditioned on the maximum marginal likelihood values of all the hyperparameters.
+
+            (See code PDF: hw3-3.pdf)
+
+        \item: Explanation of disagreement between evidence histogram and MLE ranking.
+
+            The MLE ranking will assign the "best model" according to which model has the highest likelihood with no consideration for how complex the model is, while the evidence ranking takes the model complexity and how many datasets it could theoretically produce into account via the Occam Factor. This means that a highly complex model that gives the same data fit (or only slightly better) than a simpler model will be considered the "best model" according to MLE, while that same model might incur a penalty in the evidence histogram.
+
+        \item: Posterior mean and variance over the parameters of the model with highest evidence on $\mathcal{D}_2$.
+
+            (See code PDF: hw3-3.pdf)
+
+        \item: Values of the hyperparameters maximizing the marginal likelihood.
+
+        Model 1, Dataset 1: $\hat{\alpha} \approx 13.78, \hat{\sigma} \approx 213.44, \hat{\bm{z}} = \emptyset$
+
+        Model 1, Dataset 2: $\hat{\alpha} \approx 10^{-16}, \hat{\sigma} \approx 2514048.49, \hat{\bm{z}} = \emptyset$
+
+        Model 2, Dataset 1: $\hat{\alpha} \approx 30.94, \hat{\sigma} \approx 222.94, \hat{\bm{z}} \approx [0.72, 13.29]^T$
+
+        Model 2, Dataset 2: $\hat{\alpha} \approx 0.99, \hat{\sigma} \approx 2522297.43, \hat{\bm{z}} \approx [-240.67, 335.09]^T$
+
+        Model 3, Dataset 1: $\hat{\alpha} \approx 41.47, \hat{\sigma} \approx 213.04, \hat{\bm{z}} = \emptyset$
+
+        Model 3, Dataset 2: $\hat{\alpha} \approx 10^{-16}, \hat{\sigma} \approx 2504685.75, \hat{\bm{z}} = \emptyset$
+
+    \end{enumerate}
+
+\end{enumerate}
+
+\vspace{10mm}
+\textbf{Markov chain Monte Carlo}
+
+% \begin{figure}[t!]
+%     \centering
+%     \includegraphics[scale=0.45]{hw3files/MCMC.pdf}
+%     \caption{}
+% \end{figure}
+
+\begin{enumerate}
+    \item Section 4
+
+        (See code PDF: mcmc.pdf , as well as the import murray.py)
+
+    \item What is the effect of Metropolis’s step-size parameter?
+
+        The step size controls the range of differences between two samples of a parameter. In the dumb\_metropolis function, for instance, the step size controls the range that the difference between two states can have, from $0$ to $step\_size$. This is done by multiplying the step size by a random value sampled from the uniform $[0, 1]$. In this sense, it directly controls the likelihood of a sample being rejected; too high a step size, and too few samples will be accepted (meaning lower algorithm efficiency), too low a step size, and too many samples will be accepted (which then displays higher autocorrelation, and thus must be fixed later).
+    
+    \item Is the way you initialize the chain critical for Metropolis and/or slice sampling?
+
+        Yes and no: initializing the chain differently yields different results for both slice sampling and the Metropolis algorithm. However, given enough of a burn-in period, it seems all initializations for slice sampling converge to approximately the same values. For Metropolis, the different initializations seem to follow completely different paths, and it is unclear whether they will converge after a long burn-in period. This being said, Metropolis was far less susceptible to the chain initialization once a burn-in period had passed and it had converged.
+    
+    \item What are the relative advantages of slice-sampling and Metropolis? Can you say good and bad things about both of them?
+
+        Slice sampling is more efficient in its sample usage, since it does not reject samples (whereas Metropolis does), meaning it is a more efficient algorithm overall. It also doesn't require any tuning of the posterior we're trying to approximate. Metropolis, on the other hand, is relatively easy to implement. However, it is more susceptible to the initialization and can take long to converge with a worse initialization method.
+
+        Slice sampling exhibits correlation between serial samples and requires that the posterior can be evaluated up to a constant (as in log\_pstar). Due to the nature of how it produces samples, it also does not work very well for multimodal distributions (since the slice can cross both modes/areas where there is high probability mass with no probability mass inbetween). Metropolis exhibits strong autocorrelation as well, meaning we have to resort to post-sampling filtering such as taking only every $n$th sample. Metropolis is also highly dependent on the step size: its autocorrelation is tied to it (since a lower step size means higher autocorrelation, and further spread of the autocorrelation - meaning later on, more samples must be discarded), as well as its convergence rate (how many steps it takes to converge). This is because the step size parameter controls the likelihood of sample rejection.
+
+        Both of the samplers also require burn-in periods for the Markov chain, where the values of the parameters are not close to the "true" values and thus all samples must be discarded in order to have a closer estimate to the true distribution.
+    
+    \item Why have I taken logs of quantities like $\omega$ and $A$? Need I have bothered? Does taking logs affect the model and/or the sampler?
+
+        Taking logs of these quantities avoids problems with very low numerical probabilities for computers. Computers can only represent to finite precision; but lots of times, when computing probabilities like these, we must multiply several small probabilities together, yielding very small numbers. By using the "log-sum-exp" trick, we can avoid that by just summing across exponents instead. This is evident in the calculation of the log likelihood in log\_pstar.
+    
+    \item The true values are $\omega = 875.2$ and $m = 31.79$. Are your posterior beliefs consistent with this? If not, what do you think went wrong with the sampling, modelling or both?
+
+        The posterior beliefs are approximately correct - they landed at $m = 32.02$ and $\omega = 814.03$. I believe this is due to the long burn-in period used (with the slice sampler); also, if I start close to the true value for $m$, then I achieve a similar value for the MAP for both values much faster. With a lower burn-in period or a worse initialization, it seems like it is much harder for the MCMC to converge to the true values.
+
+\end{enumerate}
+\end{document}
+

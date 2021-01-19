@@ -1,0 +1,70 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN"
+"http://www.w3.org/TR/html4/strict.dtd">
+<html lang="en">
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+	<title>MLSS 2009, MCMC practical</title>
+	<link rel="stylesheet" type="text/css" media="screen" href="../../screen.css">
+	<link rel="stylesheet" type="text/css" media="print" href="../../print.css">
+	<link rel="home" title="Home" href="http://www.cs.toronto.edu/~murray/">
+        <link rel="icon" href="../../favicon.ico" type="image/x-icon">
+	<link rel="shortcut icon" href="../../favicon.ico" type="image/x-icon">
+</head>
+<body>
+<div class="content">
+
+	<h1>MLSS 2009, MCMC practical</h1>
+
+        <p>You can download <a href="mcmc_mlss09.zip">a .zip archive</a> of all
+        of the files on this webpage. As noted below, I suggest that you do not
+        look at <tt>inference.m</tt> until you have seriously attempted to get
+        the samplers running on the parameter posterior yourself.</p>
+
+        <h2>Electronic copy of the handout</h2>
+
+        <p><a href="handout.pdf">handout.pdf</a> (<a
+            href="http://docs.google.com/viewer?url=www.cs.toronto.edu/~murray/teaching/09mlss/handout.pdf">GoogleViewer</a>).</p>
+
+        <h2>Data</h2>
+
+        <p>Here is the data in two alternative file formats:
+        <a href="astro_data.mat">astro_data.mat</a>,
+        <a href="astro_data.txt">astro_data.txt</a>.</p>
+
+        <h2>Code for samplers</h2>
+
+        <p>Here are simple implementations of dumb Metropolis and slice sampling.</p>
+
+        <p><a href="slice_sample.m">slice_sample.m</a>,
+        <a href="dumb_metropolis.m">dumb_metropolis.m</a>.</p>
+
+        <p>If you prefer, the Matlab&#8217;s statistics toolbox now comes with
+        <tt>mhsample</tt> and <tt>slicesample</tt>, although as part of a
+        separate toolbox they will not always be available.<p>
+
+        <p>There is a suggestion in the handout for a third sampler if you would
+        like to implement your own.</p>
+
+        <h2>Code for this problem</h2>
+
+        <p>I have written code for the joint probability in equation (6) up to a
+        constant: <a href="log_pstar.m">log_pstar.m</a>. I recommend that using
+        this function and the above MCMC samplers you investigate how well you
+        can sample the posterior over parameters.</p>
+
+        <h2>If you are struggling</h2>
+
+        <p>Some example &#8220;glue&#8221; that will drive the sampler on the
+        model&#8217;s posterior is: <a href="inference.m">inference.m</a>. I
+        recommend that you don't look at this until you have thought about how
+        to do this yourself. I&#8217;ve provided this code so that if you are
+        getting nowhere you can move on by modifying the example and still try
+        out the different samplers.</p>
+
+        <p><tt>inference.m</tt> calls
+        <a href="errorbar_str.m">errorbar_str.m</a>, but only for trivial
+        display purposes.</p>
+
+</div>
+</body>
+</html>
